@@ -1,0 +1,11 @@
+Package: gpsdlogger
+Priority: optional
+Version: 1.0.0
+Architecture: @ARCH@
+Depends: libgps22, gpsd
+Maintainer: Ben Stern <bstern@fortian.com>
+Section: net
+Source: Fortian Inc.
+Installed-Size: @SIZE@
+Description: Publishes GPS data to shared memory and logs P/LI to disk.
+
