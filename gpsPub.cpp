@@ -127,8 +127,10 @@ void GPSPublishShutdown(GPSHandle gpsHandle, const char *keyFile) {
             }
         }
         fclose(filePtr);
-        if (unlink(keyFile)) {
-            syslog(LOG_WARNING, "GPSPublishShutdown(): unlink(): %m");
+        if (keyFile != NULL) { // this shouldn't happen but clang thinks it can
+            if (unlink(keyFile)) {
+                syslog(LOG_WARNING, "GPSPublishShutdown(): unlink(): %m");
+            }
         }
     } else {
         syslog(LOG_WARNING, "GPSPublishShutdown(): fopen(): %m");
@@ -143,7 +145,6 @@ GPSHandle GPSSubscribe(const char *keyFile) {
     char *rv = NULL;
 
     id = -1;
-    posPtr = ((char *)-1);
 
     // First read file to see if shared memory already active.  If active, try
     // to use it.
