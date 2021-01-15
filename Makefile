@@ -8,7 +8,7 @@ ifeq ($(ARCH),x86_64)
     ARCH=amd64
 endif
 
-.PHONY: all clean tarball push deb
+.PHONY: all clean tarball deb
 
 all: gpsdlogger
 
@@ -22,14 +22,14 @@ logging.o: logging.[ch]
 clean:
 	rm -f gpsdlogger *.o debian/control/control debian/control/md5sums \
 	    debian/control.tar.gz debian/data/usr/bin/gpsdlogger \
-	    debian/data.tar.gz gpsdlogger_1.0.0-1_$(ARCH).deb
+	    debian/data.tar.gz gpsdlogger_1.1.0-1_$(ARCH).deb
 
 tarball: clean
 	(cd ..; tar -cvf gpsdlogger.tar gpsdlogger)
 
-deb: gpsdlogger_1.0.0-1_$(ARCH).deb
+deb: gpsdlogger_1.1.0-1_$(ARCH).deb
 
-gpsdlogger_1.0.0-1_$(ARCH).deb: debian/debian-binary debian/control.tar.gz \
+gpsdlogger_1.1.0-1_$(ARCH).deb: debian/debian-binary debian/control.tar.gz \
     debian/data.tar.gz
 	$(MAKE) -C debian $@
 
