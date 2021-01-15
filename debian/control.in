@@ -1,6 +1,6 @@
 Package: gpsdlogger
 Priority: optional
-Version: 1.1.0
+Version: 1.1.1
 Architecture: @ARCH@
 Depends: libgps22, gpsd
 Maintainer: Ben Stern <bstern@fortian.com>

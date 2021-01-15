@@ -3,9 +3,9 @@ ifeq ($(ARCH),x86_64)
     ARCH=amd64
 endif
 
-.PHONY: gpsdlogger_1.1.0-1_$(ARCH).deb clean
+.PHONY: gpsdlogger_1.1.1-1_$(ARCH).deb clean
 
-gpsdlogger_1.1.0-1_$(ARCH).deb: ../gpsdlogger_1.1.0-1_$(ARCH).deb
+gpsdlogger_1.1.1-1_$(ARCH).deb: ../gpsdlogger_1.1.1-1_$(ARCH).deb
 
 control/md5sums: data/usr/bin/gpsdlogger
 	cd data && find usr -type f -print0 | grep -v CVS | xargs -0 md5sum > ../$@
@@ -25,7 +25,7 @@ data.tar.gz: data/usr/bin/gpsdlogger
 	cd data && tar --exclude CVS -cvpzf ../$@ .
 	ssh -x -l root localhost chown -vR $(USER):users ${PWD}/debian/data
 
-../gpsdlogger_1.1.0-1_$(ARCH).deb: debian-binary control.tar.gz data.tar.gz
+../gpsdlogger_1.1.1-1_$(ARCH).deb: debian-binary control.tar.gz data.tar.gz
 	ar cr $@ $^
 
 clean:
