@@ -1,8 +1,8 @@
-`gpsdLogger` is a [`gpsd`](http://www.catb.org/gpsd/) client which publishes
+`gpsdLogger` is a [`gpsd`](https://gpsd.gitlab.io/gpsd/index.html) client which publishes
 Position/Location Information (P/LI) to a shared memory segment, compatible
 with
-[`gpsLogger`](https://downloads.pf.itd.nrl.navy.mil/docs/proteantools/gpsLogger.html)
-and [MGEN](https://www.nrl.navy.mil/itd/ncs/products/mgen).  It does not set
+[`gpsLogger`](https://github.com/USNavalResearchLaboratory/gpsLogger)
+and [MGEN](https://github.com/USNavalResearchLaboratory/mgen).  It does not set
 time, as it is expected that systems using `gpsdLogger` will also use
 [`ntpd`](http://ntp.org/downloads.html) for time management.  (Otherwise,
 `gpsLogger`, without the `d`, is a more suitable program, as it manages time
