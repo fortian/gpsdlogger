@@ -30,8 +30,12 @@ extern "C" {
 #endif
 
 // Upon success, this returns a pointer for storage of published GPS position.
-char *GPSMemoryInit(const char *keyFile, unsigned int size) { char *posPtr; int
-    id; FILE *filePtr; struct shmid_ds ds;
+char *GPSMemoryInit(const char *keyFile, unsigned int size) {
+    char *posPtr;
+    int id;
+    FILE *filePtr;
+    struct shmid_ds ds;
+    unsigned int holder;
 
     if (keyFile == NULL) {
         keyFile = GPS_DEFAULT_KEY_FILE;
@@ -46,7 +50,8 @@ char *GPSMemoryInit(const char *keyFile, unsigned int size) { char *posPtr; int
         if (1 == fscanf(filePtr, "%d", &id)) {
             if (((char *) -1) != (posPtr = (char *)shmat(id, 0, 0))) {
                 // Make sure pre-existing shared memory is right size
-                if (size != *((unsigned int *)posPtr)) {
+                memcpy(&holder, posPtr, sizeof (unsigned int));
+                if (size != holder) {
                     GPSPublishShutdown((GPSHandle)posPtr, keyFile);
                     posPtr = (char *)-1;
                 }
@@ -80,7 +85,7 @@ char *GPSMemoryInit(const char *keyFile, unsigned int size) { char *posPtr; int
             }
             fclose(filePtr);
             memset(posPtr + sizeof (unsigned int), 0, size);
-            *((unsigned int *)posPtr) = size;
+            memcpy(posPtr, &size, sizeof (unsigned int));
             return (posPtr + sizeof (unsigned int));
         } else {
             syslog(LOG_ERR, "GPSPublishInit() fopen(): %m");
@@ -175,6 +180,23 @@ void GPSUnsubscribe(GPSHandle gpsHandle) {
     }
 }
 
+void GPSPublishPos(GPSHandle gpsHandle, double x, double y, double z) {
+    GPSPosition pos;
+    struct timeval t;
+
+    pos.x = x;
+    pos.y = y;
+    pos.z = z;
+    pos.xyvalid = 1;
+    pos.zvalid = 1;
+    pos.tvalid = 1;
+    pos.stale = 0;
+    gettimeofday(&t, NULL);
+    memcpy(&pos.gps_time, &t, sizeof (struct timeval));
+    memcpy(&pos.sys_time, &t, sizeof (struct timeval));
+    memcpy((char *)gpsHandle, &pos, sizeof (GPSPosition));
+}
+
 void GPSPublishUpdate(GPSHandle gpsHandle, const GPSPosition* currentPosition) {
     memcpy((char *)gpsHandle, (char *)currentPosition, sizeof (GPSPosition));
 }
@@ -189,7 +211,7 @@ unsigned int GPSSetMemory(GPSHandle gpsHandle, unsigned int offset,
     unsigned int size, delta;
 
     ptr = (char *)gpsHandle - sizeof (unsigned int);
-    size = (*((unsigned int *)ptr));
+    memcpy(&size, ptr, sizeof (unsigned int));
 
     // Make sure request fits into available shared memory.
     if ((offset + len) > size) {
@@ -209,10 +231,25 @@ unsigned int GPSSetMemory(GPSHandle gpsHandle, unsigned int offset,
 
 unsigned int GPSGetMemorySize(GPSHandle gpsHandle) {
     char *ptr;
+    unsigned int size;
 
     ptr = (char *)gpsHandle - sizeof (unsigned int);
-    unsigned int size = *((unsigned int *)ptr);
+    memcpy(&size, ptr, sizeof (unsigned int));
     return size;
+}
+
+const char *GPSGetMemoryPtr(GPSHandle gpsHandle, unsigned int offset) {
+    char *ptr;
+    unsigned int size;
+
+    ptr = (char *)gpsHandle - sizeof (unsigned int);
+    memcpy(&size, ptr, sizeof (unsigned int));
+    if (offset < size) {
+        return (char *)gpsHandle + offset;
+    } else {
+        syslog(LOG_ERR, "GPSGetMemoryPtr(): invalid request");
+        return NULL;
+    }
 }
 
 unsigned int GPSGetMemory(GPSHandle gpsHandle, unsigned int offset,
@@ -221,7 +258,7 @@ unsigned int GPSGetMemory(GPSHandle gpsHandle, unsigned int offset,
     unsigned int size, delta;
 
     ptr = (char *)gpsHandle - sizeof (unsigned int);
-    size = *((unsigned int *)ptr);
+    memcpy(&size, ptr, sizeof (unsigned int));
     if (size < (offset + len)) {
         delta = offset + len - size;
         if (delta > len) {
