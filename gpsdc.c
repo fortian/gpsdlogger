@@ -13,6 +13,10 @@ You should have received a copy of the GNU General Public License along with
 this program; if not, write to the Free Software Foundation, Inc., 51 Franklin
 Street, Fifth Floor, Boston, MA 02110-1301 USA. */
 
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <gps.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -295,7 +299,7 @@ int main(int argc, char *argv[]) {
     gps_handle = NULL;
 
     gps_stream(&gps_data, WATCH_DISABLE, NULL);
-    gps_close (&gps_data);
+    gps_close(&gps_data);
 
     syslog(LOG_INFO, "Exiting...");
     if (debug) {
