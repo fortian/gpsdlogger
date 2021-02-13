@@ -6,16 +6,16 @@ compatible with
 [`gpsLogger`](https://github.com/USNavalResearchLaboratory/gpsLogger) and
 [MGEN](https://github.com/USNavalResearchLaboratory/mgen).  It does not set
 time, as it is expected that systems using `gpsdLogger` will also use
-[`ntpd`](http://ntp.org/downloads.html) for time management.  (Otherwise,
-`gpsLogger`, without the `d`, is a more suitable program, as it manages time and
-logs P/LI in a single program.)
+[`ntpd`](http://ntp.org/downloads.html) (or similar software) for time
+management.  (Otherwise, `gpsLogger`, without the `d`, is a more suitable
+program, as it manages time and logs P/LI in a single program.)
 
 It was created to address the situation where sole access to a GPS receiver
 could not be ensured, and therefore `gpsd` was used to multiplex GPS data
 access.  Although `gpsd` provides timing information suitable for use with
 `ntpd`, it does not publish P/LI in a format that MGEN can understand.  Rather
-than patch MGEN, this utility was designed to emulate `gpsLogger`'s shared
-memory publishing, allowing MGEN to automatically acquire P/LI from `gpsd`.
+than patch MGEN, this utility was designed to replicate `gpsLogger`'s shared
+memory publishing, allowing MGEN to acquire P/LI from `gpsd`.
 
 # Prerequisites
 
@@ -78,18 +78,18 @@ normal logging.
 #### Logging Control
 
 By default, logs are written to `/tmp/gpsdlogger` in filenames named after the
-timestamp (YYYYMMDD.HHMMSS) when `gpsdlogger` first gets fix.  This path can be
+GMT timestamp (YYYYMMDD.HHMMSS) when `gpsdlogger` first gets fix.  This path can be
 controlled with `-l`  (lowercase "ell" or "Lima") and does not need to exist
 (though the parent directory does).  You should change it from the default to
 keep the logs safe from automatic cleaners and system reboots.
 
 An example filename is `20210213.131214`, which would be created if `gpsdlogger`
-first got fix at 13:12:14 on 13 Feb 2021.  These timestamps are from `gpsd` and
-are therefore in GPS time.
+first got fix at 13:12:14 GMT on 13 Feb 2021.
 
 If "truetime" logging is enabled (see below), an additional log with more
-information will be created, with the same filename format, but using the
-system clock timestamp at time of first fix.
+information will be created, with the same filename format, but using the system
+clock timestamp, in GMT, at time of first fix, and with the extension `.tt` (so the
+truetime logfile for the above timestamp would be `20210213.131214.tt`).
 
 #### Syslog Facility
 
@@ -102,9 +102,12 @@ Recommendations are one of "cron", "daemon", or "local0" through "local7". (See
 #### Logging
 
 `gpsdlogger` only logs to the logfile(s) when it has fix.  It will log to
-`syslog` whenever it doesn't have 3D fix, and whenever it acquires fix, at log
+`syslog` whenever it doesn't have fix, and whenever it acquires fix, at log
 level "debug".  (Note that most systems don't actually record "debug" `syslog`
 messages, so you may need to enable them when troubleshooting.)
+
+It waits up to two seconds for `gpsd` to return fresh information, but may log
+more often if `gpsd` indicates that it has received an update.
 
 Normally, `gpsdlogger` only logs the following information:
 
